@@ -1,6 +1,7 @@
 package ru.yandex.sprint7;
 
 import static io.restassured.RestAssured.given;
+import static org.apache.http.HttpStatus.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,6 +10,7 @@ import io.qameta.allure.Description;
 import io.restassured.RestAssured;
 import ru.yandex.sprint7.data.CommonData;
 import ru.yandex.sprint7.data.CreateOrderPostBodyData;
+import ru.yandex.sprint7.pojo.CreateOrderPostBodyRequestPojo;
 
 @RunWith(Parameterized.class)
 public class CreateOrderParametriazeTest {
@@ -64,6 +66,6 @@ public class CreateOrderParametriazeTest {
 		CreateOrderPostBodyRequestPojo json = new CreateOrderPostBodyRequestPojo(firstName,lastName,address,metroStation,
 				phone,rentTime,deliveryDate,comment,color);
 		given().header("Content-type", "application/json")
-		.body(json).when().post(CommonData.CREATE_ORDER_API).then().statusCode(201);
+		.body(json).when().post(CommonData.CREATE_ORDER_API).then().statusCode(SC_CREATED);
 	}
 }

@@ -6,5 +6,6 @@ public class CommonData {
 	public static final String LOGIN_COURIER_API = "/api/v1/courier/login";
 	public static final String CREATE_ORDER_API = "/api/v1/orders";
 	public static final String ORDER_LIST_API = "/api/v1/orders";
+	public static final String REGEX_DIGITAL = "-?\\d+(\\.\\d+)?";
 
 }
