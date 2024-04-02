@@ -1,7 +1,7 @@
 package ru.yandex.sprint7;
 
-import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.*;
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,6 +23,7 @@ public class CreateOrderParametriazeTest {
 	private final String deliveryDate;
 	private final String comment;
 	private final String[] color;
+	OrderApi order = new OrderApi();
 	
 	@Before
 	public void setUp() {
@@ -65,7 +66,6 @@ public class CreateOrderParametriazeTest {
 	public void createOrderWithBlackColourTest() {
 		CreateOrderPostBodyRequestPojo json = new CreateOrderPostBodyRequestPojo(firstName,lastName,address,metroStation,
 				phone,rentTime,deliveryDate,comment,color);
-		given().header("Content-type", "application/json")
-		.body(json).when().post(CommonData.CREATE_ORDER_API).then().statusCode(SC_CREATED);
+		assertEquals(SC_CREATED, order.getOrderResponse(json).statusCode());
 	}
 }

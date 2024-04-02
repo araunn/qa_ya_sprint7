@@ -2,17 +2,17 @@ package ru.yandex.sprint7;
 
 import static org.junit.Assert.*;
 import static org.apache.http.HttpStatus.*;
-
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
 import ru.yandex.sprint7.data.CommonData;
 import ru.yandex.sprint7.data.CreateCourierPostBodyData;
+import ru.yandex.sprint7.pojo.CreateCourierPostBodyRequestPojo;
 import ru.yandex.sprint7.pojo.CreateCourierPostBodyResponsePojo;
-
 import org.junit.Before;
+import org.junit.After;
 import org.junit.Test;
-import static io.restassured.RestAssured.*;
+
 
 public class CreateCourierTest {
 	CourierApi courier = new CourierApi();
@@ -21,75 +21,66 @@ public class CreateCourierTest {
 	public void setUp() {
 		RestAssured.baseURI = CommonData.SITE_ADRESS;
 	}
+	
+	@After
+	public void deleteCourier() {
+		courier.deleteCourier();
+	}
 
 	@Test
 	@DisplayName("Check that courier can create")
 	@Description("проверка что курьера можно создать")
 	public void canCreateCourierTest() {
-		given().header("Content-type", "application/json").body(courier.getJsonWithLoginAndPasswordAndName()).when()
-		.post(CommonData.CREATE_COURIER_API).then().statusCode(SC_CREATED);
-		courier.deleteCourier(courier.getJsonWithLoginAndPassword());
+		assertEquals(SC_CREATED, courier.getCreateCourierResponse(courier.getJsonWithLoginAndPasswordAndName()).statusCode());
 	}
 	
 	@Test
 	@Description("проверка текста сообщения о создании курьера")
 	public void checkMessageCreateCourierTest() {
-		CreateCourierPostBodyResponsePojo response = given().header("Content-type", "application/json")
-		.body(courier.getJsonWithLoginAndPasswordAndName()).when()
-		.post(CommonData.CREATE_COURIER_API).then().extract().as(CreateCourierPostBodyResponsePojo.class);
-		assertEquals(CreateCourierPostBodyData.SUCCESS_CREATE_COURIER_MASSAGE, response.getOk());
-		courier.deleteCourier(courier.getJsonWithLoginAndPassword());
+		assertEquals(CreateCourierPostBodyData.SUCCESS_CREATE_COURIER_MASSAGE, 
+		courier.getCreateCourierResponse(courier.getJsonWithLoginAndPasswordAndName()).as(CreateCourierPostBodyResponsePojo.class).getOk());
 	}
 	
 	@Test
 	@Description("проверка что нельзя создать 2х курьеров с одинаковыми данными")
 	public void cannotCreateDiplicateCourierTest() {
+		CreateCourierPostBodyRequestPojo json = courier.getJsonWithLoginAndPasswordAndName();
 		//создаем курьера и проверяем что статус успешного создания курьера
-		given().header("Content-type", "application/json").body(courier.getJsonWithLoginAndPasswordAndName()).when()
-		.post(CommonData.CREATE_COURIER_API).then().statusCode(SC_CREATED);
+		assertEquals(SC_CREATED, courier.getCreateCourierResponse(json).statusCode());
 		// создаем еще одного куртьера с теми же данными и проверяем, что приходит ошибка
-		given().header("Content-type", "application/json").body(courier.getJsonWithLoginAndPasswordAndName()).when()
-		.post(CommonData.CREATE_COURIER_API).then().statusCode(SC_CONFLICT);
-		courier.deleteCourier(courier.getJsonWithLoginAndPassword());	
+		assertEquals(SC_CONFLICT, courier.getCreateCourierResponse(json).statusCode());	
 	}
 	
 	@Test
 	@Description("проверка что нельзя создать курьеров с одинаковыми логинами")
 	public void cannotCreateCourierWithDuplicateNameTest() {
-		given().header("Content-type", "application/json").body(courier.getJsonWithLoginAndPasswordAndName()).when()
-		.post(CommonData.CREATE_COURIER_API).then().statusCode(SC_CREATED);
-		// создаем еще одного куртьера с теми же данными и проверяем, что приходит ошибка
-		given().header("Content-type", "application/json").body(courier.getJsonWithLoginAndPasswordnewAndNamenew()).when()
-		.post(CommonData.CREATE_COURIER_API).then().statusCode(SC_CONFLICT);
-		courier.deleteCourier(courier.getJsonWithLoginAndPassword());	
+		//создаем курьера и проверяем что статус успешного создания курьера
+		assertEquals(SC_CREATED, courier.getCreateCourierResponse(courier.getJsonWithLoginAndPasswordAndName()).statusCode());
+		// создаем еще одного куртьера с тем же логином и проверяем, что приходит ошибка
+		assertEquals(SC_CONFLICT, courier.getCreateCourierResponse(courier.getJsonWithLoginAndPasswordnewAndNamenew()).statusCode());	
 	}
 	
 	@Test
 	@Description("проверка что нельзя создать курьера без логина")
 	public void cannotCreateCourierWithoutFieldLoginTest() {
-		given().header("Content-type", "application/json").body(courier.getJsonWithoutLoginWithName()).when()
-		.post(CommonData.CREATE_COURIER_API).then().statusCode(SC_BAD_REQUEST);
+		assertEquals(SC_BAD_REQUEST, courier.getCreateCourierResponse(courier.getJsonWithoutLoginWithName()).statusCode());
 	}
 	
 	@Test
 	@Description("проверка что нельзя создать курьера без пароля")
 	public void cannotCreateCourierWithoutFieldPasswordTest() {
-		given().header("Content-type", "application/json").body(courier.getJsonWithoutPasswordWithName()).when()
-		.post(CommonData.CREATE_COURIER_API).then().statusCode(SC_BAD_REQUEST);
+		assertEquals(SC_BAD_REQUEST, courier.getCreateCourierResponse(courier.getJsonWithoutPasswordWithName()).statusCode());
 	}
 	
 	@Test
 	@Description("проверка что нельзя создать курьера без логина и пароля")
 	public void cannotCreateCourierWithoutFieldLoginAndPasswordTest() {
-		given().header("Content-type", "application/json").body(courier.getJsonWithoutLoginAndPasswordWithName()).when()
-		.post(CommonData.CREATE_COURIER_API).then().statusCode(SC_BAD_REQUEST);
+		assertEquals(SC_BAD_REQUEST, courier.getCreateCourierResponse(courier.getJsonWithoutLoginAndPasswordWithName()).statusCode());
 	}
 	
 	@Test
 	@Description("проверка что можно создать курьера без имени")
 	public void canCreateCourierWithoutFieldNameTest() {
-		given().header("Content-type", "application/json")
-		.body(courier.getJsonWithLoginAndPasswordWithoutName()).when().post(CommonData.CREATE_COURIER_API).then().statusCode(201);
-		courier.deleteCourier(courier.getJsonWithLoginAndPassword());
+		assertEquals(SC_CREATED, courier.getCreateCourierResponse(courier.getJsonWithLoginAndPasswordWithoutName()).statusCode());
 	}
 }

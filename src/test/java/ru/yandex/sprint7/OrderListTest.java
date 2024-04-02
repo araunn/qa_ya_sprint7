@@ -1,6 +1,5 @@
 package ru.yandex.sprint7;
 
-import static io.restassured.RestAssured.given;
 import static org.junit.Assert.assertFalse;
 import org.junit.After;
 import org.junit.Before;
@@ -22,14 +21,13 @@ public class OrderListTest {
 	
 	@After
 	public void deleteCourier() {
-	courier.deleteCourier(courier.getJsonWithLoginAndPassword());
+	courier.deleteCourier();
 	}
 
 	@Test
 	@Description("Пооверка что при получении списка заказов тело ответа не пустое")
 	public void checkExistOrdersTest() {
-		OrdersListGetBodyResponsPojo response = given().header("Content-type", "application/json").body(order.getOrderJsonWithOneColor())
-		 .when().get(CommonData.ORDER_LIST_API).then().extract().as(OrdersListGetBodyResponsPojo.class);
-        assertFalse(response.getOrders().length==0);
+        assertFalse(order.getOrderListResponse(order.getOrderJsonWithOneColor()).as(OrdersListGetBodyResponsPojo.class)
+        		.getOrders().length==0);
 	}
 }

@@ -2,6 +2,7 @@ package ru.yandex.sprint7;
 
 import static io.restassured.RestAssured.given;
 
+import io.restassured.response.Response;
 import ru.yandex.sprint7.data.CommonData;
 import ru.yandex.sprint7.data.CreateCourierPostBodyData;
 import ru.yandex.sprint7.pojo.CreateCourierPostBodyRequestPojo;
@@ -10,17 +11,25 @@ import ru.yandex.sprint7.pojo.LoginCourierPostBodyResponsePojo;
 
 public class CourierApi {
 	
-	public void createCourier() {
-		CreateCourierPostBodyRequestPojo json = new CreateCourierPostBodyRequestPojo(CreateCourierPostBodyData.COURIER_LOGIN, 
-				CreateCourierPostBodyData.COURIER_PASSWORD, CreateCourierPostBodyData.COURIER_NAME);
-		given().header("Content-type", "application/json")
-		.body(json).when().post(CommonData.CREATE_COURIER_API).then().statusCode(201);
+	public Response getAuthorizationCourierResponse(LoginCourierPostBodyRequestPojo json) {
+		return given().header("Content-type", "application/json").body(json).when().post(CommonData.LOGIN_COURIER_API);
 	}
 	
-	public void deleteCourier(LoginCourierPostBodyRequestPojo json) {
+	public Response getCreateCourierResponse(CreateCourierPostBodyRequestPojo json) {
+		return given().header("Content-type", "application/json").body(json).when().post(CommonData.CREATE_COURIER_API);
+	}
+	
+	public void createCourier() {
+		given().header("Content-type", "application/json")
+		.body(getJsonWithLoginAndPasswordAndName()).when().post(CommonData.CREATE_COURIER_API).then().statusCode(201);
+	}
+	
+	public void deleteCourier() {
 		LoginCourierPostBodyResponsePojo response =  given().header("Content-type", "application/json")
-				.body(json).post(CommonData.LOGIN_COURIER_API).then().extract().as(LoginCourierPostBodyResponsePojo.class);
+				.body(getJsonWithLoginAndPassword()).post(CommonData.LOGIN_COURIER_API).then().extract().as(LoginCourierPostBodyResponsePojo.class);
+		 if (response.getId()!=null) {
 		given().delete(CommonData.CREATE_COURIER_API + "/" + response.getId().toString()).then().statusCode(200);
+		 }
 	}
 	
 	public LoginCourierPostBodyRequestPojo getJsonWithLoginAndPassword() {
